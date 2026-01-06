@@ -1,75 +1,21 @@
-#!/usr/bin/env zsh
-
+#!/bin/sh
 set -euo pipefail
 
-# Configuration
+sudo apt update
+sudo apt upgrade
+sudo apt install -y gh zsh gcc
+gh auth login
+chsh -s $(which zsh)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-REPOS=(
-  "EskelinenAntti/tmux-configuration"
-  "EskelinenAntti/neovim-configuration"
-  "EskelinenAntti/zsh-configuration"
-  "EskelinenAntti/ghostty-configuration"
-  "EskelinenAntti/git-configuration"
-  "EskelinenAntti/lazygit-configuration"
-)
-
-BASE_DIR="$HOME/Configurations"
-
-# Prerequisite checks
-
-echo "Checking prerequisites..."
-
-# zsh must be the default shell
-if [[ "${SHELL:-}" != */zsh ]]; then
-  echo "ERROR: zsh is not the default shell."
-  echo "Current default shell: ${SHELL:-unknown}"
-  exit 1
-fi
-
-# Homebrew must exist
-if ! command -v brew >/dev/null 2>&1; then
-  echo "ERROR: Homebrew is not installed."
-  echo "See https://brew.sh/"
-  exit 1
-fi
-
-# Git must exist
-if ! command -v git >/dev/null 2>&1; then
-  echo "ERROR: git is not installed."
-  exit 1
-fi
-
-# Setup
-
-mkdir -p "$BASE_DIR"
-cd "$BASE_DIR"
-
-# Clone and install
-
-for REPO in "${REPOS[@]}"; do
-  NAME="${REPO##*/}"
-  TARGET_DIR="$BASE_DIR/$NAME"
-  SSH_URL="git@github.com:$REPO.git"
-
-  echo "------------------------------------"
-  echo "Repository: $REPO"
-
-  if [[ -d "$TARGET_DIR" ]]; then
-    echo "Skipping (already exists): $NAME"
-    continue
-  fi
-
-  echo "Cloning via SSH..."
-  git clone "$SSH_URL" "$TARGET_DIR"
-
-  echo "Running make"
-  (
-    cd "$TARGET_DIR"
-    make
-  )
-
-  echo "Done: $NAME"
-  echo
-done
-
-echo "All configurations processed."
+mkdir Configurations
+cd Configurations
+git clone ssh://git@github.com/EskelinenAntti/git-configuration.git
+(cd git-configuration && make)
+git clone ssh://git@github.com/EskelinenAntti/zsh-configuration.git
+(cd zsh-configuration && make)
+git clone ssh://git@github.com/EskelinenAntti/tmux-configuration.git
+(cd tmux-configuration && make)
+git clone ssh://git@github.com/EskelinenAntti/neovim-configuration.git
+(cd neovim-configuration && make)
