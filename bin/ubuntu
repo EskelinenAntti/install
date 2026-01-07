@@ -1,21 +1,36 @@
 #!/bin/sh
-set -euo pipefail
+set -eu
 
 sudo apt update
 sudo apt upgrade
 sudo apt install -y gh zsh gcc
-gh auth login
+
+if ! gh auth status; then
+    gh auth login --web
+fi
+
 chsh -s $(which zsh)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-mkdir Configurations
+mkdir -p Configurations
 cd Configurations
-git clone ssh://git@github.com/EskelinenAntti/git-configuration.git
-(cd git-configuration && make)
-git clone ssh://git@github.com/EskelinenAntti/zsh-configuration.git
-(cd zsh-configuration && make)
-git clone ssh://git@github.com/EskelinenAntti/tmux-configuration.git
-(cd tmux-configuration && make)
-git clone ssh://git@github.com/EskelinenAntti/neovim-configuration.git
-(cd neovim-configuration && make)
+
+for repo in \
+    git-configuration \
+    zsh-configuration \
+    tmux-configuration \
+    neovim-configuration \
+    ghostty-configuration \
+    lazygit-configuration
+do
+    if [ -d "$repo" ]; then
+        echo "$repo found, skipping"
+        continue
+    fi
+    git clone "ssh://git@github.com/EskelinenAntti/$repo.git"
+    (cd "$repo" && make)
+done
+
+# Install ghostty
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/mkasberg/ghostty-ubuntu/HEAD/install.sh)"
