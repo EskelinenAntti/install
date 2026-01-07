@@ -13,8 +13,8 @@ chsh -s $(which zsh)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-mkdir -p Configurations
-cd Configurations
+mkdir -p "$HOME/Configurations/"
+cd "$HOME/Configurations/"
 
 for repo in \
     git-configuration \
